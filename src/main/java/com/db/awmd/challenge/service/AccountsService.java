@@ -1,6 +1,7 @@
 package com.db.awmd.challenge.service;
 
 import com.db.awmd.challenge.domain.Account;
+import com.db.awmd.challenge.domain.Transfer;
 import com.db.awmd.challenge.repository.AccountsRepository;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,5 +24,9 @@ public class AccountsService {
 
   public Account getAccount(String accountId) {
     return this.accountsRepository.getAccount(accountId);
+  }
+
+  public void transfer(Transfer transfer) {
+
   }
 }
