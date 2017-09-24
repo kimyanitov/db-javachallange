@@ -1,4 +1,4 @@
-#Assumptions and solutions
+# Assumptions and solutions
 1. It is assumed that creation of accounts is working as expected - no modification to that has been made.
 2. Account has been split into two (DTO and Entity) mainly for readability.
 3. The implementation is agnostic of how the repository may operate. I.e. single mutable entity for all, or new immutable copies each time for each thread or a combination of both.
