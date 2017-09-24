@@ -1,17 +1,25 @@
 package com.db.awmd.challenge;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-
 import com.db.awmd.challenge.domain.Account;
+import com.db.awmd.challenge.domain.Transfer;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
 import com.db.awmd.challenge.service.AccountsService;
-import java.math.BigDecimal;
+import com.db.awmd.challenge.service.NotificationService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+
+import static java.lang.String.format;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -19,6 +27,8 @@ public class AccountsServiceTest {
 
   @Autowired
   private AccountsService accountsService;
+  @MockBean
+  private NotificationService notificationService;
 
   @Test
   public void addAccount() throws Exception {
@@ -41,6 +51,28 @@ public class AccountsServiceTest {
     } catch (DuplicateAccountIdException ex) {
       assertThat(ex.getMessage()).isEqualTo("Account id " + uniqueId + " already exists!");
     }
+  }
 
+  @Test
+  public void shouldUpdateBothLegsWhenTransferAndNotifySides() throws Exception {
+    Account from = new Account("Id-from", new BigDecimal("100.00"));
+    Account to = new Account("Id-to", new BigDecimal("9.99"));
+    accountsService.createAccount(from);
+    accountsService.createAccount(to);
+
+    Transfer transfer = new Transfer(from.getAccountId(), to.getAccountId(), new BigDecimal("5.50"));
+    accountsService.transfer(transfer);
+
+    BigDecimal newFromBalance = accountsService.getAccount(from.getAccountId()).getBalance();
+    BigDecimal newToBalance = accountsService.getAccount(to.getAccountId()).getBalance();
+    assertEquals(from.getBalance().subtract(transfer.getAmount()), newFromBalance);
+    assertEquals(to.getBalance().add(transfer.getAmount()), newToBalance);
+
+    verify(notificationService, times(1))
+            .notifyAboutTransfer(new Account(from.getAccountId(), newFromBalance),
+                    format("You have sent %s to %s.", transfer.getAmount(), transfer.getAccountToId()));
+    verify(notificationService, times(1))
+            .notifyAboutTransfer(new Account(to.getAccountId(), newToBalance),
+                    format("You have received %s from %s.", transfer.getAmount(), transfer.getAccountFromId()));
   }
 }
