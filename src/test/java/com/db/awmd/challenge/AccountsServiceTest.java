@@ -6,6 +6,7 @@ import com.db.awmd.challenge.exception.BalanceTransferException;
 import com.db.awmd.challenge.exception.DuplicateAccountIdException;
 import com.db.awmd.challenge.service.AccountsService;
 import com.db.awmd.challenge.service.NotificationService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,11 @@ public class AccountsServiceTest {
     private AccountsService accountsService;
     @MockBean
     private NotificationService notificationService;
+
+    @Before
+    public void setUp() throws Exception {
+        accountsService.getAccountsRepository().clearAccounts();
+    }
 
     @Test
     public void addAccount() throws Exception {
