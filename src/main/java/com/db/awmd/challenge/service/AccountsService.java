@@ -51,7 +51,7 @@ public class AccountsService {
             newFromBalance = fromBalance.subtract(transfer.getAmount());
 
             if (newFromBalance.compareTo(BigDecimal.ZERO) < 0) {
-                throw new BalanceTransferException(format("Amount is too low for account %s to transfer %s", from, transfer.getAmount()));
+                throw new BalanceTransferException(format("Amount is too low for account %s to transfer %s", transfer.getAccountFromId(), transfer.getAmount()));
             }
 
             if (!from.getBalance().compareAndSet(fromBalance, newFromBalance, fromStampHolder[0], fromStampHolder[0] + 1)) {
